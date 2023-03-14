@@ -1,5 +1,5 @@
 
-pub const N: usize = 5;
+pub const N: usize = 4;
 pub const MASK: u8 = 2_u8.pow(N as u32) - 1;
 
 pub const fn factorial(n: usize) -> usize {

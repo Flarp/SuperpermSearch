@@ -40,9 +40,8 @@ pub fn ida_star(start: node::SearchNode) -> Option<node::SearchNode> {
     }
 
     fn search(next: node::SearchNode, bound: u16) -> (u16, node::SearchNode) {
-        let f = next.cost + next.heuristic;
-        if f > bound {
-            return (f, next);
+        if next.f > bound {
+            return (next.f, next);
         }
         
         let mut min = (u16::MAX, next.clone());

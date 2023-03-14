@@ -9,7 +9,7 @@ pub struct SearchNode {
     pub treenode: Rc<linktree::LinkTree>,
     pub symbol: u8,
     pub heuristic: u16,
-    pub cost: u16,
+    pub f: u16,
     pub cycles: [u8; CYCLES],
     pub suffix: [u8; (N as usize)],
     pub wasted: u8
@@ -25,7 +25,7 @@ impl Eq for SearchNode {}
 
 impl Ord for SearchNode {
     fn cmp(&self, other: &Self) -> Ordering {
-        (other.heuristic + other.cost).cmp(&(self.heuristic + self.cost))
+        (other.f).cmp(&self.f)
     }
 }
 
@@ -69,12 +69,14 @@ pub fn start_node() -> SearchNode {
         treenode = linktree::LinkTree { parent: Some(Rc::new(treenode)), symbol: i as u8 };
     }
 
+    let h = (factorial(N.into()) + factorial((N-1).into()) + factorial((N-2).into())) as u16 - ((N+1) as u16);
+
     SearchNode {
         treenode: Rc::new(treenode),
         cycles: cycles,
         symbol: (N-1) as u8,
-        heuristic: (factorial(N.into()) + factorial((N-1).into()) + factorial((N-2).into())) as u16 - ((N+1) as u16),
-        cost: (6*N - 3) as u16,
+        heuristic: h,
+        f: (6*N - 3) as u16 + h,
         suffix: suffix,
         wasted: 0
     }
@@ -99,7 +101,7 @@ impl SearchNode {
                 continue;
             }
 
-            let mut heuristic = self.heuristic;
+            let mut delta = 0;
 
             let treenode: linktree::LinkTree = linktree::LinkTree {
                 symbol: i as u8,
@@ -127,12 +129,12 @@ impl SearchNode {
 
                 if cycles[code] & (1 << (suffix[0]) as usize - 1) == 0 {
                     /* We've discovered a new permutation */
-                    heuristic -= 1;
+                    delta += 1;
                     cycles[code] |= 1 << (suffix[0]) as usize - 1;
 
                     if cycles[code] & MASK == MASK {
                         /* We've completed an entire cycle */
-                        heuristic -= 1;
+                        delta += 1;
 
                         let mut count = 0;
                         let mut succs = successors(Some(suffix), move |_| {
@@ -157,7 +159,7 @@ impl SearchNode {
 
                         if succs.all(|perm| cycles[lehmer_code(perm)] & MASK == MASK) {
                             /* We have completed a 2-loop */
-                            heuristic -= 1
+                            delta += 1
                         }
                     }
                 } else {
@@ -172,7 +174,7 @@ impl SearchNode {
 
                 if (wasted == N as u8) {
                     continue;
-                } else if (consts::MAX * 3) < (self.cost + 3 + heuristic).into() {
+                } else if (consts::MAX * 3) < (self.f + 3).into() {
                     continue;
                 } else {
                     let mut prevs: [usize; N] = [N+1; N];
@@ -227,8 +229,8 @@ impl SearchNode {
 
             ret.push(SearchNode {
                 treenode: Rc::new(treenode),
-                cost: self.cost + 3,
-                heuristic: heuristic,
+                f: self.f + 3 - delta,
+                heuristic: self.heuristic - delta,
                 symbol: i as u8,
                 cycles: cycles,
                 suffix: suffix,
