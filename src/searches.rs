@@ -35,8 +35,6 @@ pub fn ida_star(start: node::SearchNode) -> Option<node::SearchNode> {
         } else {
             bound = res.0;
         }
-
-        println!("branch is now: {:?}", bound);
     }
 
     fn search(next: node::SearchNode, bound: u16) -> (u16, node::SearchNode) {
@@ -60,30 +58,62 @@ pub fn ida_star(start: node::SearchNode) -> Option<node::SearchNode> {
 
 }
 
-/* 
+
 pub fn rbf_search(start: node::SearchNode) -> Option<node::SearchNode> {
 
-    fn search(next: node::SearchNode, limit: u16) -> ((u16, u16), node::SearchNode) {
+    fn search(next: node::SearchNode, f: u16, limit: u16) -> (u16, bool, node::SearchNode) {
 
         if next.heuristic == 0 {
-            return ((next.cost, 0), next);
+            return (0, true, next);
         }
-        
-        let mut min = ((next.cost, next.heuristic), next.clone());
 
-        let mut succs = next.generate_successors();
-        succs.sort();
+        let mut succs = next.generate_successors()
+            .into_iter().map(|s| (s.f, s)).collect::<Vec<(u16, node::SearchNode)>>();
+
+        if succs.len() == 0 {
+            return (u16::MAX, false, next)
+        }
+
+        succs.sort_by_key(|s| u16::MAX - s.0);
+
+        for mut succ in succs.iter_mut() {
+            succ.0 = std::cmp::max(succ.0, f);
+        }
 
         loop {
             let mut best = match succs.pop() {
                 Some(b) => b,
-                None => return ((u16::MAX, u16::MAX), next)
-            }
+                None => unreachable!()
+            };
 
-            
+            if best.0 > limit {
+                return (best.0, false, best.1);
+            };
+
+            let alt_min = match succs.last() {
+                Some(b) => std::cmp::min(limit, b.0),
+                None => limit
+            };
+
+            let res = search(best.1.clone(), best.0, alt_min);
+
+            best.0 = res.0;
+            succs.push(best);
+            succs.sort_by_key(|s| u16::MAX - s.0);
+
+            if res.1 {
+                return res;
+            }
         }
 
-        min
     }
 
-}*/
+    let f = start.f;
+    let res = search(start, f, u16::MAX);
+
+    if res.1 {
+        Some(res.2)
+    } else {
+        None
+    }
+}
