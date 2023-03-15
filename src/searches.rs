@@ -2,7 +2,7 @@ use crate::*;
 
 use std::collections::BinaryHeap;
 
-pub fn a_star(start: node::SearchNode) -> Option<node::SearchNode> {
+pub fn a_star(start: node::SearchNode) -> node::SearchNode {
     let mut heap: BinaryHeap<node::SearchNode> = BinaryHeap::new();
 
     let mut next = start;
@@ -15,23 +15,21 @@ pub fn a_star(start: node::SearchNode) -> Option<node::SearchNode> {
 
         next = match heap.pop() {
             Some(g) => g,
-            None => return None
+            None => unreachable!()
         };
     }
 
-    return Some(next);
+    next
 }
 
-pub fn ida_star(start: node::SearchNode) -> Option<node::SearchNode> {
+pub fn ida_star(start: node::SearchNode) -> node::SearchNode {
 
     let mut bound = start.heuristic;
 
     loop {
         let res = search(start.clone(), bound);
-        if res.0 == u16::MAX {
-            return None;
-        } else if res.0 == 0 {
-            return Some(res.1);
+        if res.0 == 0 {
+            return res.1;
         } else {
             bound = res.0;
         }
@@ -59,7 +57,7 @@ pub fn ida_star(start: node::SearchNode) -> Option<node::SearchNode> {
 }
 
 
-pub fn rbf_search(start: node::SearchNode) -> Option<node::SearchNode> {
+pub fn rbf_search(start: node::SearchNode) -> node::SearchNode {
 
     fn search(next: node::SearchNode, f: u16, limit: u16) -> (u16, bool, node::SearchNode) {
 
@@ -111,9 +109,6 @@ pub fn rbf_search(start: node::SearchNode) -> Option<node::SearchNode> {
     let f = start.f;
     let res = search(start, f, u16::MAX);
 
-    if res.1 {
-        Some(res.2)
-    } else {
-        None
-    }
+    res.2
+
 }
