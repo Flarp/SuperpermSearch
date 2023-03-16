@@ -50,6 +50,10 @@ For tree searches, the ability to *prune* successors in order to avoid searching
 
 * **Duplicate Permutation Detection**: If the current node contains a permutation more than once, do not expand the node. This is conjectural as it is not known whether or not being a minimal superpermutation implies there are no duplicate permutations, but the smallest known permutations for different $n$ do not have duplicates.
 
+## Usage
+
+As of now, the tool uses compile-time constants to generate fixed-sized types that depend on $n$. Unfortunately, Rust currently does not support parsing environment flags as integers (in which you would be able to pass the desired $n$ as a compiler flag, making everything a lot easier), so you will need to modify `src/consts.rs` to change the value of `pub const N: usize = ...` to the desired $n$ value and then re-compile.
+
 ## Results
 
 | $n$ | A* | IDA* | RBFS | SMA* |
