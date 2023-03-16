@@ -52,7 +52,7 @@ For tree searches, the ability to *prune* successors in order to avoid searching
 
 ## Usage
 
-As of now, the tool uses compile-time constants to generate fixed-sized types that depend on $n$. Unfortunately, Rust currently does not support parsing environment flags as integers (in which you would be able to pass the desired $n$ as a compiler flag, making everything a lot easier), so you will need to modify `src/consts.rs` to change the value of `pub const N: usize = ...` to the desired $n$ value and then re-compile.
+As of now, the tool uses compile-time constants to generate fixed-sized types that depend on $n$. Unfortunately, Rust currently does not support parsing environment flags as integers (in which you would be able to pass the desired $n$ as a compiler flag, making everything a lot easier), so you will need to modify `src/consts.rs` to change the value of `pub const N: usize = ...` to the desired $n$ value and then re-compile. To compile and run, simply run `cargo run -r` in the parent directory.
 
 ## Results
 
