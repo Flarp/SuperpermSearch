@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 use std::rc::Rc;
 use std::iter::*;
 use crate::consts::*;
+use crate::traits::*;
 use crate::*;
 
 #[derive(Clone, Debug)]
@@ -92,8 +93,8 @@ pub fn is_permutation(perm: [u8; (N as usize)]) -> bool {
     (mask >> 1) == MASK
 }
 
-impl SearchNode {
-    pub fn generate_successors(&self) -> Vec<SearchNode> {
+impl Searchable for SearchNode {
+    fn generate_successors(&self) -> Vec<SearchNode> {
         let mut ret = Vec::with_capacity(N as usize);
 
         for i in 1..=N {
@@ -164,15 +165,12 @@ impl SearchNode {
                     }
                 } else {
                     /* This is not a new permutation, continue */
-                    //println!("{:?} {:?} ?", suffix, linktree::get_sequence(self.treenode.clone()));
-                    //println!("{:?} {:?} {:?}", cycle_suffix, lehmer_code(cycle_suffix), 
-                    //    cycles[lehmer_code(cycle_suffix)] & (1 << (suffix[0] - 1)));
                     continue;
                 }
             } else {
                 wasted += 1;
 
-                if (wasted == N as u8) {
+                if wasted == N as u8 {
                     continue;
                 } else if (consts::MAX * 3) < (self.f + 3).into() {
                     continue;
@@ -240,5 +238,15 @@ impl SearchNode {
         };
 
         ret
+    }
+
+    #[inline(always)]
+    fn f(&self) -> u16 {
+        self.f
+    }
+
+    #[inline(always)]
+    fn heuristic(&self) -> u16 {
+        self.heuristic
     }
 }

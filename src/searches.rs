@@ -1,30 +1,27 @@
-use crate::*;
+use crate::traits::*;
 
 use std::collections::BinaryHeap;
 
-pub fn a_star(start: node::SearchNode) -> node::SearchNode {
-    let mut heap: BinaryHeap<node::SearchNode> = BinaryHeap::new();
+pub fn a_star<T: Searchable>(start: T) -> T {
+    let mut heap: BinaryHeap<T> = BinaryHeap::new();
 
     let mut next = start;
 
-    while next.heuristic != 0 {
+    while next.heuristic() != 0 {
 
         for succ in next.generate_successors() {
             heap.push(succ);
         }
 
-        next = match heap.pop() {
-            Some(g) => g,
-            None => unreachable!()
-        };
+        next = heap.pop().unwrap(); 
     }
 
     next
 }
 
-pub fn ida_star(start: node::SearchNode) -> node::SearchNode {
+pub fn ida_star<T: Searchable>(start: T) -> T {
 
-    let mut bound = start.heuristic;
+    let mut bound = start.heuristic();
 
     loop {
         let res = search(start.clone(), bound);
@@ -35,16 +32,16 @@ pub fn ida_star(start: node::SearchNode) -> node::SearchNode {
         }
     }
 
-    fn search(next: node::SearchNode, bound: u16) -> (u16, node::SearchNode) {
-        if next.f > bound {
-            return (next.f, next);
+    fn search<T: Searchable>(next: T, bound: u16) -> (u16, T) {
+        if next.f() > bound {
+            return (next.f(), next);
         }
         
         let mut min = (u16::MAX, next.clone());
 
         for succ in next.generate_successors() {
             let t = search(succ, bound);
-            if t.1.heuristic == 0 {
+            if t.1.heuristic() == 0 {
                 return (0, t.1)
             } else if t.0 < min.0 {
                 min = t;
@@ -57,16 +54,16 @@ pub fn ida_star(start: node::SearchNode) -> node::SearchNode {
 }
 
 
-pub fn rbf_search(start: node::SearchNode) -> node::SearchNode {
+pub fn rbf_search<T: Searchable>(start: T) -> T {
 
-    fn search(next: node::SearchNode, f: u16, limit: u16) -> (u16, bool, node::SearchNode) {
+    fn search<T: Searchable>(next: T, f: u16, limit: u16) -> (u16, bool, T) {
 
-        if next.heuristic == 0 {
+        if next.heuristic() == 0 {
             return (0, true, next);
         }
 
         let mut succs = next.generate_successors()
-            .into_iter().map(|s| (s.f, s)).collect::<Vec<(u16, node::SearchNode)>>();
+            .into_iter().map(|s| (s.f(), s)).collect::<Vec<(u16, T)>>();
 
         if succs.len() == 0 {
             return (u16::MAX, false, next)
@@ -106,7 +103,7 @@ pub fn rbf_search(start: node::SearchNode) -> node::SearchNode {
 
     }
 
-    let f = start.f;
+    let f = start.f();
     let res = search(start, f, u16::MAX);
 
     res.2
