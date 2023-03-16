@@ -48,6 +48,8 @@ For tree searches, the ability to *prune* successors in order to avoid searching
 
 * **Upper Limiting**: There is an algorithm known to generate superpermutations of length $n! + (n−1)! + (n−2)! + (n−3)! + n − 3$. If we come across a node such that it would be impossible for an ideal (and likely impossible) combination of the remaining unused permutations, along with the current string, to fit in a string with length less than the size guaranteed by the algorithm, abandon the node.
 
+* **Duplicate Permutation Detection**: If the current node contains a permutation more than once, do not expand the node. This is conjectural as it is not known whether or not being a minimal superpermutation implies there are no duplicate permutations, but the smallest known permutations for different $n$ do not have duplicates.
+
 ## Results
 
 | $n$ | A* | IDA* | RBFS | SMA* |
